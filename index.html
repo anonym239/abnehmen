@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>NutriCore – Deine Fitness-App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">NutriCore</span>
+      </div>
+      <div class="header-sub">Deine persönliche Fitness-Datenbank</div>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-tab="lexicon">
+      <span class="tab-icon">🥦</span>
+      <span class="tab-label">Lexikon</span>
+    </button>
+    <button class="tab-btn" data-tab="recipes">
+      <span class="tab-icon">🍳</span>
+      <span class="tab-label">Rezepte</span>
+    </button>
+    <button class="tab-btn" data-tab="cheatday">
+      <span class="tab-icon">🍫</span>
+      <span class="tab-label">Cheat-Day</span>
+    </button>
+    <button class="tab-btn" data-tab="sport">
+      <span class="tab-icon">🏋️</span>
+      <span class="tab-label">Sport</span>
+    </button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+
+    <!-- ===== TAB: LEXIKON ===== -->
+    <section class="tab-panel active" id="tab-lexicon">
+      <div class="search-bar-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Lebensmittel suchen …"
+          autocomplete="off"
+        />
+        <button class="search-clear" id="searchClear" aria-label="Suche löschen">✕</button>
+      </div>
+
+      <div id="searchResultsBox" class="search-results-box hidden"></div>
+
+      <!-- GREEN -->
+      <div class="category-section" id="cat-green">
+        <div class="category-header green">
+          <span class="cat-dot green-dot"></span>
+          <div class="cat-header-text">
+            <span class="cat-title">GRÜN – Viel essen</span>
+            <span class="cat-desc">Nährstoffdicht, wenig Kalorien</span>
+          </div>
+          <span class="cat-count" id="count-green"></span>
+        </div>
+        <div class="sub-filter-row" id="filter-green"></div>
+        <div class="food-grid" id="grid-green"></div>
+      </div>
+
+      <!-- YELLOW -->
+      <div class="category-section" id="cat-yellow">
+        <div class="category-header yellow">
+          <span class="cat-dot yellow-dot"></span>
+          <div class="cat-header-text">
+            <span class="cat-title">GELB – Normale Portionen</span>
+            <span class="cat-desc">In Maßen genießen</span>
+          </div>
+          <span class="cat-count" id="count-yellow"></span>
+        </div>
+        <div class="sub-filter-row" id="filter-yellow"></div>
+        <div class="food-grid" id="grid-yellow"></div>
+      </div>
+
+      <!-- RED -->
+      <div class="category-section" id="cat-red">
+        <div class="category-header red">
+          <span class="cat-dot red-dot"></span>
+          <div class="cat-header-text">
+            <span class="cat-title">ROT – Lieber vermeiden</span>
+            <span class="cat-desc">Selten und bewusst genießen</span>
+          </div>
+          <span class="cat-count" id="count-red"></span>
+        </div>
+        <div class="sub-filter-row" id="filter-red"></div>
+        <div class="food-grid" id="grid-red"></div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: REZEPTE ===== -->
+    <section class="tab-panel" id="tab-recipes">
+      <div class="section-header">
+        <h2 class="section-title">Gesunde Rezepte</h2>
+        <p class="section-sub">Einfach & lecker – ideal zum gemeinsamen Kochen.</p>
+      </div>
+      <div class="recipe-grid" id="recipeGrid"></div>
+    </section>
+
+    <!-- ===== TAB: CHEAT-DAY ===== -->
+    <section class="tab-panel" id="tab-cheatday">
+      <div class="section-header">
+        <h2 class="section-title">Cheat-Day Kalkulator</h2>
+        <p class="section-sub">Genuss in Mengen, nicht in Massen. Wähle eine Süßigkeit und die Portion.</p>
+      </div>
+      <div class="cheat-grid" id="cheatGrid"></div>
+    </section>
+
+    <!-- ===== TAB: SPORT ===== -->
+    <section class="tab-panel" id="tab-sport">
+      <div class="section-header">
+        <h2 class="section-title">Sport-Rechner</h2>
+        <p class="section-sub">Wähle ein Workout – sieh sofort, was es bringt.</p>
+      </div>
+
+      <div class="weight-selector">
+        <div class="weight-selector-left">
+          <span class="weight-icon">⚖️</span>
+          <label class="weight-label">Mein Gewicht</label>
+        </div>
+        <div class="weight-controls">
+          <button class="weight-btn" id="weightMinus">−</button>
+          <span class="weight-display" id="weightDisplay">65 kg</span>
+          <button class="weight-btn" id="weightPlus">+</button>
+        </div>
+      </div>
+
+      <div class="sport-grid" id="sportGrid"></div>
+
+      <div class="sport-result hidden" id="sportResult">
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-stats">
+          <div class="result-stat">
+            <span class="result-stat-icon">🔥</span>
+            <span class="result-stat-val" id="resultKcal"></span>
+            <span class="result-stat-label">kcal verbrannt</span>
+          </div>
+          <div class="result-stat">
+            <span class="result-stat-icon">⏱️</span>
+            <span class="result-stat-val" id="resultMin"></span>
+            <span class="result-stat-label">Minuten</span>
+          </div>
+          <div class="result-stat">
+            <span class="result-stat-icon">⚡</span>
+            <span class="result-stat-val" id="resultMet"></span>
+            <span class="result-stat-label">MET-Wert</span>
+          </div>
+        </div>
+        <div class="result-effect" id="resultEffect"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RECIPE MODAL -->
+  <div class="modal-overlay hidden" id="recipeModal">
+    <div class="modal-card" id="recipeModalCard">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- FOOD DETAIL MODAL -->
+  <div class="modal-overlay hidden" id="foodModal">
+    <div class="modal-card food-modal-card" id="foodModalCard">
+      <button class="modal-close" id="foodModalClose">✕</button>
+      <div id="foodModalContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
