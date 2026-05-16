@@ -282,6 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initModal();
   initFoodModal();
   initIntersectionAnimations();
+  initCustomTab();
 });
 
 // ===================================================================
@@ -809,4 +810,436 @@ function initTabs() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
+}
+
+// ===================================================================
+// CUSTOM ENTRIES (localStorage)
+// ===================================================================
+
+const STORAGE_KEYS = {
+  foods:   "nc_custom_foods",
+  recipes: "nc_custom_recipes",
+  sports:  "nc_custom_sports",
+};
+
+function loadCustomData() {
+  return {
+    foods:   JSON.parse(localStorage.getItem(STORAGE_KEYS.foods)   || "[]"),
+    recipes: JSON.parse(localStorage.getItem(STORAGE_KEYS.recipes) || "[]"),
+    sports:  JSON.parse(localStorage.getItem(STORAGE_KEYS.sports)  || "[]"),
+  };
+}
+
+function saveCustomFoods(arr)   { localStorage.setItem(STORAGE_KEYS.foods,   JSON.stringify(arr)); }
+function saveCustomRecipes(arr) { localStorage.setItem(STORAGE_KEYS.recipes, JSON.stringify(arr)); }
+function saveCustomSports(arr)  { localStorage.setItem(STORAGE_KEYS.sports,  JSON.stringify(arr)); }
+
+// ---------- Custom sport card in the sport grid ----------
+function makeSportCard(s, idx, isCustom) {
+  const card = document.createElement("div");
+  card.className = "sport-card";
+  if (isCustom) card.dataset.customIdx = idx;
+  const kcalEst = Math.round(s.met * userWeight * (s.duration / 60));
+  const sportCount = document.querySelectorAll(".sport-card").length;
+  card.innerHTML = `
+    <div class="sport-card-emoji">${s.emoji}</div>
+    <div class="sport-card-name">${s.name}</div>
+    <div class="sport-card-dur">${s.duration} Min.</div>
+    <div class="sport-card-kcal-hint">~${kcalEst} kcal</div>
+  `;
+  card.addEventListener("click", () => {
+    const allCards = [...document.querySelectorAll(".sport-card")];
+    const idx2 = allCards.indexOf(card);
+    showSportResultDirect(s, card, idx2);
+  });
+  return card;
+}
+
+function showSportResultDirect(s, card, cardIdx) {
+  document.querySelectorAll(".sport-card").forEach(c => c.classList.remove("active"));
+  card.classList.add("active");
+  const kcal = Math.round(s.met * userWeight * (s.duration / 60));
+  const result = document.getElementById("sportResult");
+  document.getElementById("resultTitle").textContent = `${s.emoji} ${s.name}`;
+  document.getElementById("resultKcal").textContent = kcal;
+  document.getElementById("resultMin").textContent = s.duration;
+  document.getElementById("resultMet").textContent = s.met.toFixed(1);
+  document.getElementById("resultEffect").textContent = s.effect || "–";
+  result.classList.remove("hidden");
+  setTimeout(() => result.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+}
+
+// ---------- Render custom entry list items ----------
+function customFoodListItem(item, idx, allCustomFoods) {
+  const catLabel = { green: "🟢", yellow: "🟡", red: "🔴" }[item.category] || "";
+  const div = document.createElement("div");
+  div.className = "custom-entry-item";
+  div.innerHTML = `
+    <span class="cei-emoji">${item.emoji || "🍽️"}</span>
+    <div class="cei-info">
+      <div class="cei-name">${catLabel} ${item.name}</div>
+      <div class="cei-detail">${item.brand || ""} · ${item.kcal} kcal/100g · P ${item.protein}g · KH ${item.carbs}g · F ${item.fat}g</div>
+    </div>
+    <button class="cei-del" title="Löschen">🗑️</button>
+  `;
+  div.querySelector(".cei-del").addEventListener("click", () => {
+    // Remove from food grid
+    const grid = document.getElementById(`grid-${item.category}`);
+    const toRemove = grid ? grid.querySelector(`[data-custom-id="${item.id}"]`) : null;
+    if (toRemove) toRemove.remove();
+    // Update count
+    const countEl = document.getElementById(`count-${item.category}`);
+    if (countEl) {
+      const cur = parseInt(countEl.textContent) || 0;
+      countEl.textContent = `${cur - 1} Einträge`;
+    }
+    // Remove from storage
+    const updated = allCustomFoods.filter((_, i) => i !== idx);
+    saveCustomFoods(updated);
+    div.remove();
+    if (updated.length === 0) showEmptyCustomList("customFoodList");
+  });
+  return div;
+}
+
+function customRecipeListItem(item, idx, allCustomRecipes) {
+  const div = document.createElement("div");
+  div.className = "custom-entry-item";
+  div.innerHTML = `
+    <span class="cei-emoji">${item.emoji || "🍽️"}</span>
+    <div class="cei-info">
+      <div class="cei-name">${item.name}</div>
+      <div class="cei-detail">${item.kcal} kcal · P ${item.protein}g · KH ${item.carbs}g · F ${item.fat}g · ${item.time || ""}</div>
+    </div>
+    <button class="cei-del" title="Löschen">🗑️</button>
+  `;
+  div.querySelector(".cei-del").addEventListener("click", () => {
+    // Remove recipe card from grid
+    const grid = document.getElementById("recipeGrid");
+    const toRemove = grid ? grid.querySelector(`[data-custom-id="${item.id}"]`) : null;
+    if (toRemove) toRemove.remove();
+    const updated = allCustomRecipes.filter((_, i) => i !== idx);
+    saveCustomRecipes(updated);
+    div.remove();
+    if (updated.length === 0) showEmptyCustomList("customRecipeList");
+  });
+  return div;
+}
+
+function customSportListItem(item, idx, allCustomSports) {
+  const div = document.createElement("div");
+  div.className = "custom-entry-item";
+  div.innerHTML = `
+    <span class="cei-emoji">${item.emoji || "🏃"}</span>
+    <div class="cei-info">
+      <div class="cei-name">${item.name}</div>
+      <div class="cei-detail">${item.duration} Min. · MET ${item.met}</div>
+    </div>
+    <button class="cei-del" title="Löschen">🗑️</button>
+  `;
+  div.querySelector(".cei-del").addEventListener("click", () => {
+    // Remove sport card from grid
+    const grid = document.getElementById("sportGrid");
+    const toRemove = grid ? grid.querySelector(`[data-custom-id="${item.id}"]`) : null;
+    if (toRemove) toRemove.remove();
+    const updated = allCustomSports.filter((_, i) => i !== idx);
+    saveCustomSports(updated);
+    div.remove();
+    if (updated.length === 0) showEmptyCustomList("customSportList");
+  });
+  return div;
+}
+
+function showEmptyCustomList(listId) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  if (el.children.length === 0) {
+    el.innerHTML = `<div class="custom-empty">Noch keine eigenen Einträge.</div>`;
+  }
+}
+
+function clearEmptyMsg(listId) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  const empty = el.querySelector(".custom-empty");
+  if (empty) empty.remove();
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  setTimeout(() => el.classList.add("hidden"), 3500);
+}
+
+function numVal(id) {
+  return parseFloat(document.getElementById(id).value) || 0;
+}
+function strVal(id) {
+  return document.getElementById(id).value.trim();
+}
+
+// ---------- INIT CUSTOM TAB ----------
+function initCustomTab() {
+  // Sub-nav switching
+  document.querySelectorAll(".custom-sub-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".custom-sub-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".custom-sub-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`csub-${btn.dataset.csub}`).classList.add("active");
+    });
+  });
+
+  // Load existing custom data and render
+  const data = loadCustomData();
+
+  // Render existing custom foods into grids + list
+  const foodList = document.getElementById("customFoodList");
+  if (data.foods.length === 0) {
+    foodList.innerHTML = `<div class="custom-empty">Noch keine eigenen Lebensmittel.</div>`;
+  }
+  data.foods.forEach((item, idx) => {
+    // Add to food grid
+    appendFoodToGrid(item);
+    // Add to custom list
+    foodList.appendChild(customFoodListItem(item, idx, data.foods));
+  });
+
+  // Render existing custom recipes into recipe grid + list
+  const recipeList = document.getElementById("customRecipeList");
+  if (data.recipes.length === 0) {
+    recipeList.innerHTML = `<div class="custom-empty">Noch keine eigenen Rezepte.</div>`;
+  }
+  data.recipes.forEach((item, idx) => {
+    appendRecipeToGrid(item);
+    recipeList.appendChild(customRecipeListItem(item, idx, data.recipes));
+  });
+
+  // Render existing custom sports into sport grid + list
+  const sportList = document.getElementById("customSportList");
+  if (data.sports.length === 0) {
+    sportList.innerHTML = `<div class="custom-empty">Noch keine eigenen Sportarten.</div>`;
+  }
+  data.sports.forEach((item, idx) => {
+    appendSportToGrid(item);
+    sportList.appendChild(customSportListItem(item, idx, data.sports));
+  });
+
+  // --- ADD FOOD ---
+  document.getElementById("addFoodBtn").addEventListener("click", () => {
+    const name = strVal("fName");
+    const kcal = numVal("fKcal");
+    if (!name) { showError("fError", "Bitte einen Namen eingeben."); return; }
+    if (kcal <= 0) { showError("fError", "Bitte kcal-Wert eingeben."); return; }
+
+    const item = {
+      id:       genId(),
+      emoji:    strVal("fEmoji") || "🍽️",
+      name,
+      brand:    strVal("fBrand") || "Eigener Eintrag",
+      category: document.getElementById("fCategory").value,
+      sub:      strVal("fSub")   || "Eigene",
+      serving:  numVal("fServing") || 100,
+      kcal,
+      protein:  numVal("fProtein"),
+      carbs:    numVal("fCarbs"),
+      sugar:    numVal("fSugar"),
+      fat:      numVal("fFat"),
+      satFat:   numVal("fSatFat"),
+      fiber:    numVal("fFiber"),
+    };
+
+    const current = loadCustomData();
+    current.foods.push(item);
+    saveCustomFoods(current.foods);
+
+    appendFoodToGrid(item);
+    clearEmptyMsg("customFoodList");
+    const foodList2 = document.getElementById("customFoodList");
+    foodList2.appendChild(customFoodListItem(item, current.foods.length - 1, current.foods));
+
+    // Clear form
+    ["fEmoji","fName","fBrand","fSub","fServing","fKcal","fProtein","fCarbs","fSugar","fFat","fSatFat","fFiber"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+
+    // Scroll to result in lexikon
+    showSuccess("fError", `✓ "${item.name}" zu ${item.category === "green" ? "GRÜN" : item.category === "yellow" ? "GELB" : "ROT"} hinzugefügt!`);
+  });
+
+  // --- ADD RECIPE ---
+  document.getElementById("addRecipeBtn").addEventListener("click", () => {
+    const name  = strVal("rName");
+    const kcal  = numVal("rKcal");
+    const steps = strVal("rSteps");
+    if (!name)  { showError("rError", "Bitte einen Rezeptnamen eingeben."); return; }
+    if (kcal <= 0) { showError("rError", "Bitte kcal-Wert eingeben."); return; }
+    if (!steps) { showError("rError", "Bitte mindestens einen Zubereitungsschritt eingeben."); return; }
+
+    const item = {
+      id:         genId(),
+      emoji:      strVal("rEmoji") || "🍽️",
+      name,
+      kcal,
+      protein:    numVal("rProtein"),
+      carbs:      numVal("rCarbs"),
+      fat:        numVal("rFat"),
+      time:       strVal("rTime") || "–",
+      difficulty: document.getElementById("rDifficulty").value,
+      steps:      steps.split("\n").map(s => s.trim()).filter(Boolean),
+    };
+
+    const current = loadCustomData();
+    current.recipes.push(item);
+    saveCustomRecipes(current.recipes);
+
+    appendRecipeToGrid(item);
+    clearEmptyMsg("customRecipeList");
+    const recipeList2 = document.getElementById("customRecipeList");
+    recipeList2.appendChild(customRecipeListItem(item, current.recipes.length - 1, current.recipes));
+
+    ["rEmoji","rName","rTime","rKcal","rProtein","rCarbs","rFat","rSteps"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+    showSuccess("rError", `✓ Rezept "${item.name}" hinzugefügt!`);
+  });
+
+  // --- ADD SPORT ---
+  document.getElementById("addSportBtn").addEventListener("click", () => {
+    const name     = strVal("sName");
+    const duration = numVal("sDuration");
+    const met      = numVal("sMet");
+    if (!name)       { showError("sError", "Bitte einen Namen eingeben."); return; }
+    if (duration <= 0) { showError("sError", "Bitte eine Dauer in Minuten eingeben."); return; }
+    if (met <= 0)    { showError("sError", "Bitte einen MET-Wert eingeben."); return; }
+
+    const item = {
+      id:       genId(),
+      emoji:    strVal("sEmoji") || "🏃",
+      name,
+      duration,
+      met,
+      effect:   strVal("sEffect") || "Eigene Sportart.",
+    };
+
+    const current = loadCustomData();
+    current.sports.push(item);
+    saveCustomSports(current.sports);
+
+    appendSportToGrid(item);
+    clearEmptyMsg("customSportList");
+    const sportList2 = document.getElementById("customSportList");
+    sportList2.appendChild(customSportListItem(item, current.sports.length - 1, current.sports));
+
+    ["sEmoji","sName","sDuration","sMet","sEffect"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+    showSuccess("sError", `✓ Sportart "${item.name}" hinzugefügt!`);
+  });
+}
+
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  el.classList.add("success-msg");
+  setTimeout(() => {
+    el.classList.add("hidden");
+    el.classList.remove("success-msg");
+  }, 3000);
+}
+
+// ---------- Append helpers ----------
+function appendFoodToGrid(item) {
+  const grid = document.getElementById(`grid-${item.category}`);
+  if (!grid) return;
+  const card = foodCard(item, item.category);
+  card.dataset.customId = item.id;
+  card.classList.add("revealed"); // skip observer, show immediately
+  grid.appendChild(card);
+  // Update count
+  const countEl = document.getElementById(`count-${item.category}`);
+  if (countEl) {
+    const cur = parseInt(countEl.textContent) || 0;
+    countEl.textContent = `${cur + 1} Einträge`;
+  }
+}
+
+function appendRecipeToGrid(item) {
+  const grid = document.getElementById("recipeGrid");
+  if (!grid) return;
+  const card = document.createElement("div");
+  card.className = "recipe-card";
+  card.dataset.customId = item.id;
+  card.innerHTML = `
+    <div class="recipe-emoji">${item.emoji}</div>
+    <div class="recipe-info">
+      <div class="recipe-name">${item.name} <span class="custom-badge">Eigene</span></div>
+      <div class="recipe-meta">
+        <span class="recipe-meta-item">⏱ ${item.time}</span>
+        <span class="recipe-meta-item">📊 ${item.difficulty}</span>
+      </div>
+      <div class="recipe-macros">
+        <span class="macro-pill kcal">⚡ ${item.kcal} kcal</span>
+        <span class="macro-pill protein">🥩 ${item.protein}g P</span>
+        <span class="macro-pill carbs">🌾 ${item.carbs}g KH</span>
+        <span class="macro-pill fat">🫙 ${item.fat}g F</span>
+      </div>
+      <div class="recipe-tap-hint">Tippen für Zubereitung ›</div>
+    </div>
+  `;
+  card.addEventListener("click", () => openCustomRecipeModal(item));
+  grid.appendChild(card);
+}
+
+function appendSportToGrid(item) {
+  const grid = document.getElementById("sportGrid");
+  if (!grid) return;
+  const card = document.createElement("div");
+  card.className = "sport-card";
+  card.dataset.customId = item.id;
+  const kcalEst = Math.round(item.met * userWeight * (item.duration / 60));
+  card.innerHTML = `
+    <div class="sport-card-emoji">${item.emoji}</div>
+    <div class="sport-card-name">${item.name} <span class="custom-badge">Eigene</span></div>
+    <div class="sport-card-dur">${item.duration} Min.</div>
+    <div class="sport-card-kcal-hint">~${kcalEst} kcal</div>
+  `;
+  card.addEventListener("click", () => showSportResultDirect(item, card));
+  grid.appendChild(card);
+}
+
+function openCustomRecipeModal(item) {
+  const content = document.getElementById("modalContent");
+  const stepsHTML = item.steps.map((s, i) => `
+    <div class="modal-step">
+      <div class="step-num">${i + 1}</div>
+      <div class="step-text">${s}</div>
+    </div>
+  `).join("");
+  content.innerHTML = `
+    <div class="modal-emoji">${item.emoji}</div>
+    <div class="modal-title">${item.name}</div>
+    <div class="modal-meta-row">
+      <span class="recipe-meta-item">⏱ ${item.time}</span>
+      <span class="recipe-meta-item">📊 ${item.difficulty}</span>
+    </div>
+    <div class="modal-macros">
+      <span class="macro-pill kcal">⚡ ${item.kcal} kcal</span>
+      <span class="macro-pill protein">🥩 ${item.protein}g Protein</span>
+      <span class="macro-pill carbs">🌾 ${item.carbs}g KH</span>
+      <span class="macro-pill fat">🫙 ${item.fat}g Fett</span>
+    </div>
+    <div class="modal-steps-title">Zubereitung</div>
+    ${stepsHTML}
+  `;
+  document.getElementById("recipeModal").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
 }

@@ -39,6 +39,10 @@
       <span class="tab-icon">🏋️</span>
       <span class="tab-label">Sport</span>
     </button>
+    <button class="tab-btn" data-tab="custom">
+      <span class="tab-icon">➕</span>
+      <span class="tab-label">Eigene</span>
+    </button>
   </nav>
 
   <!-- MAIN CONTENT -->
@@ -163,6 +167,200 @@
         </div>
         <div class="result-effect" id="resultEffect"></div>
       </div>
+    </section>
+
+  </main>
+
+    <!-- ===== TAB: EIGENE EINTRÄGE ===== -->
+    <section class="tab-panel" id="tab-custom">
+      <div class="section-header">
+        <h2 class="section-title">Eigene Einträge</h2>
+        <p class="section-sub">Füge deine eigenen Lebensmittel, Rezepte und Sportarten hinzu. Alles wird gespeichert.</p>
+      </div>
+
+      <!-- Inner Sub-Nav -->
+      <div class="custom-sub-nav">
+        <button class="custom-sub-btn active" data-csub="food">🥦 Lebensmittel</button>
+        <button class="custom-sub-btn" data-csub="recipe">🍳 Rezept</button>
+        <button class="custom-sub-btn" data-csub="sport">🏃 Sport</button>
+      </div>
+
+      <!-- ---- LEBENSMITTEL FORM ---- -->
+      <div class="custom-sub-panel active" id="csub-food">
+        <div class="custom-form-card">
+          <div class="cform-title">Neues Lebensmittel</div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Emoji</label>
+              <input type="text" class="cform-input cform-emoji" id="fEmoji" placeholder="🍎" maxlength="2" />
+            </div>
+            <div class="cform-group cform-flex">
+              <label class="cform-label">Name *</label>
+              <input type="text" class="cform-input" id="fName" placeholder="z.B. Avocado" />
+            </div>
+          </div>
+          <div class="cform-group">
+            <label class="cform-label">Marke / Sorte</label>
+            <input type="text" class="cform-input" id="fBrand" placeholder="z.B. Hass Avocado, Rewe Bio" />
+          </div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Kategorie *</label>
+              <select class="cform-input cform-select" id="fCategory">
+                <option value="green">🟢 GRÜN – Viel essen</option>
+                <option value="yellow">🟡 GELB – Normale Portionen</option>
+                <option value="red">🔴 ROT – Lieber vermeiden</option>
+              </select>
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Unterkategorie</label>
+              <input type="text" class="cform-input" id="fSub" placeholder="z.B. Gemüse, Obst, Protein" />
+            </div>
+          </div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Portion (g/ml)</label>
+              <input type="number" class="cform-input" id="fServing" placeholder="100" min="1" max="2000" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">kcal / 100g *</label>
+              <input type="number" class="cform-input" id="fKcal" placeholder="0" min="0" max="9999" step="0.1" />
+            </div>
+          </div>
+          <div class="cform-row cform-row-3">
+            <div class="cform-group">
+              <label class="cform-label">Protein (g)</label>
+              <input type="number" class="cform-input" id="fProtein" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Kohlenhydrate (g)</label>
+              <input type="number" class="cform-input" id="fCarbs" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">davon Zucker (g)</label>
+              <input type="number" class="cform-input" id="fSugar" placeholder="0" min="0" step="0.1" />
+            </div>
+          </div>
+          <div class="cform-row cform-row-3">
+            <div class="cform-group">
+              <label class="cform-label">Fett (g)</label>
+              <input type="number" class="cform-input" id="fFat" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">ges. Fettsäuren (g)</label>
+              <input type="number" class="cform-input" id="fSatFat" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Ballaststoffe (g)</label>
+              <input type="number" class="cform-input" id="fFiber" placeholder="0" min="0" step="0.1" />
+            </div>
+          </div>
+          <div class="cform-error hidden" id="fError"></div>
+          <button class="cform-submit-btn" id="addFoodBtn">+ Lebensmittel hinzufügen</button>
+        </div>
+        <div class="custom-entry-list" id="customFoodList"></div>
+      </div>
+
+      <!-- ---- REZEPT FORM ---- -->
+      <div class="custom-sub-panel" id="csub-recipe">
+        <div class="custom-form-card">
+          <div class="cform-title">Neues Rezept</div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Emoji</label>
+              <input type="text" class="cform-input cform-emoji" id="rEmoji" placeholder="🍲" maxlength="2" />
+            </div>
+            <div class="cform-group cform-flex">
+              <label class="cform-label">Rezeptname *</label>
+              <input type="text" class="cform-input" id="rName" placeholder="z.B. Proteinshake Bowl" />
+            </div>
+          </div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Zeit</label>
+              <input type="text" class="cform-input" id="rTime" placeholder="z.B. 15 Min." />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Schwierigkeit</label>
+              <select class="cform-input cform-select" id="rDifficulty">
+                <option value="Sehr einfach">Sehr einfach</option>
+                <option value="Einfach" selected>Einfach</option>
+                <option value="Mittel">Mittel</option>
+                <option value="Anspruchsvoll">Anspruchsvoll</option>
+              </select>
+            </div>
+          </div>
+          <div class="cform-row cform-row-4">
+            <div class="cform-group">
+              <label class="cform-label">kcal *</label>
+              <input type="number" class="cform-input" id="rKcal" placeholder="0" min="0" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Protein (g)</label>
+              <input type="number" class="cform-input" id="rProtein" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">KH (g)</label>
+              <input type="number" class="cform-input" id="rCarbs" placeholder="0" min="0" step="0.1" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">Fett (g)</label>
+              <input type="number" class="cform-input" id="rFat" placeholder="0" min="0" step="0.1" />
+            </div>
+          </div>
+          <div class="cform-group">
+            <label class="cform-label">Zubereitung (jede Zeile = 1 Schritt) *</label>
+            <textarea class="cform-input cform-textarea" id="rSteps" placeholder="Schritt 1: Wasser kochen.&#10;Schritt 2: Haferflocken hinzufügen.&#10;Schritt 3: Genießen!" rows="5"></textarea>
+          </div>
+          <div class="cform-error hidden" id="rError"></div>
+          <button class="cform-submit-btn" id="addRecipeBtn">+ Rezept hinzufügen</button>
+        </div>
+        <div class="custom-entry-list" id="customRecipeList"></div>
+      </div>
+
+      <!-- ---- SPORT FORM ---- -->
+      <div class="custom-sub-panel" id="csub-sport">
+        <div class="custom-form-card">
+          <div class="cform-title">Neue Sportart</div>
+          <div class="cform-row cform-row-2">
+            <div class="cform-group">
+              <label class="cform-label">Emoji</label>
+              <input type="text" class="cform-input cform-emoji" id="sEmoji" placeholder="🤸" maxlength="2" />
+            </div>
+            <div class="cform-group cform-flex">
+              <label class="cform-label">Name *</label>
+              <input type="text" class="cform-input" id="sName" placeholder="z.B. Hula Hoop" />
+            </div>
+          </div>
+          <div class="cform-row cform-row-3">
+            <div class="cform-group">
+              <label class="cform-label">Dauer (Min.) *</label>
+              <input type="number" class="cform-input" id="sDuration" placeholder="30" min="1" max="600" />
+            </div>
+            <div class="cform-group">
+              <label class="cform-label">MET-Wert *</label>
+              <input type="number" class="cform-input" id="sMet" placeholder="5.0" min="0.5" max="20" step="0.1" />
+            </div>
+            <div class="cform-group cform-met-hint">
+              <label class="cform-label">MET-Referenz</label>
+              <div class="met-ref-box">
+                <span>Schlafen 0.9</span>
+                <span>Gehen 3.5</span>
+                <span>Radfahren 7.5</span>
+                <span>Joggen 9.0</span>
+              </div>
+            </div>
+          </div>
+          <div class="cform-group">
+            <label class="cform-label">Beschreibung / Wirkung</label>
+            <textarea class="cform-input cform-textarea" id="sEffect" placeholder="Was bewirkt dieses Training? z.B. Stärkt den Rumpf und verbessert die Balance." rows="3"></textarea>
+          </div>
+          <div class="cform-error hidden" id="sError"></div>
+          <button class="cform-submit-btn" id="addSportBtn">+ Sportart hinzufügen</button>
+        </div>
+        <div class="custom-entry-list" id="customSportList"></div>
+      </div>
+
     </section>
 
   </main>
